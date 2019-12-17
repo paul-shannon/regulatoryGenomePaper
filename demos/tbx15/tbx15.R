@@ -19,8 +19,8 @@ if(!exists("tp")){
 if(!exists("igv")){
    igv <- igvR()
    setGenome(igv, "hg38")
-   later(function() showGenomicRegion(igv, "GATA2"), 3)
    setBrowserWindowTitle(igv, "GATA2")
+  showGenomicRegion(igv, "GATA2")
    #later(function(){
    #         track <- DataFrameQuantitativeTrack("gh", tbl.enhancers[, c("chrom", "start", "end", "combinedScore")],
    #                                             autoscale=FALSE, color="blue", min=0, max=50)
@@ -252,29 +252,6 @@ test_getEnhancersForTissues <- function()
 
 } # test_getEnhancersForTissues
 #------------------------------------------------------------------------------------------------------------------------
-run <- function()
-{
-   showGenomicRegion(igv, "chr3:128,602,838-128,611,664")
-   showGenomicRegion(igv, "chr3:128071944-128623958")
-   setTargetGene(tp, "GATA2")
-   all.tissues <- getEnhancerTissues(tp)
-   myeloid.tissues <- grep("myeloid", all.tissues, ignore.case=TRUE, value=TRUE)
-
-   tbl.enhancers.myeloid <- getEnhancersForTissues(myeloid.tissues, display=TRUE, trackName="myeloid enhancers")
-   tbl.enhancers.all <- getEnhancersForTissues("all", display=TRUE, trackName="all enhancers")
-
-   display_ATACseq_in_enhancers(tbl.enhancers.myeloid, trackName="myeloid enhancers")
-
-   display_ATACseq_in_enhancers()
-   displayMotifsForTF()
-   hopeRestored()
-   showGenomicRegion(igv, "chr3:128,479,295-128,503,294")
-
-   #display_ATACseq_in_enhancers(tbl.enhancers.all)
-   #makeAtacBasedModels()
-
-} # run
-#------------------------------------------------------------------------------------------------------------------------
 new.run <- function()
 {
   setTargetGene(tp, "GATA2")
@@ -310,55 +287,45 @@ new.run <- function()
   printf("fimo hits: %d", nrow(tbl.tfbs))
 
 
-  tbl.sub <- subset(tbl.tfbs, motif_id==motif)[, c("chrom", "start", "end", "name")]
+  tbl.sub <- tbl.tfbs[, c("chrom", "start", "end", "name")]
   tbl.ov <- as.data.frame(findOverlaps(GRanges(tbl.atacAll), GRanges(tbl.sub)))
   tbl.sub.sub <- tbl.sub[tbl.ov$subjectHits,]
 
   track <- DataFrameAnnotationTrack("fimo-hocomoco", tbl.sub.sub, color="darkBlue")
   displayTrack(igv, track)
 
-#     #----------------------------------------
-#     # now JASPAR2018
-#     #----------------------------------------
-#
-#  fimo <- 1e-4
-#  phast7 <- 0.0
-#
-#  tbl.tfbs <- getTFBS.fimo(tv, tbl.roi, fimo.threshold=fimo, conservation.threshold=phast7, meme.file.jaspar2018)
-#  dim(tbl.tfbs)
-#
-#  tbl.tfbs$name <- paste0("motifDb::", tbl.tfbs$motif_id)
-#  printf("fimo hits: %d", nrow(tbl.tfbs))
-#
-#  tbl.sub <- tbl.tfbs[, c("chrom", "start", "end", "name")]
-#  dim(tbl.sub)
-#  track <- DataFrameAnnotationTrack("jaspar2018", tbl.sub, color="random")
-#  displayTrack(igv, track)
-#
-#  moods <- 1e-4
-#  tbl.tfbs <- getTFBS.moods(tv, tbl.roi, match.threshold=moods, conservation.threshold=phast7, motifs.tbx15.jaspar2018)
-#  dim(tbl.tfbs)
-#  tbl.tfbs$name <- paste0("motifDb::", tbl.tfbs$motif_id)
-#
-#  tbl.sub <- tbl.tfbs[, c("chrom", "start", "end", "name")]
-#  dim(tbl.sub)
-#  track <- DataFrameAnnotationTrack("mood-jaspar", tbl.sub, color="random")
-#  displayTrack(igv, track)
-#
-#
-#  tbl.roi <- as.data.frame(getGenomicRegion(igv), stringsAsFactors=FALSE)
-#  moods <- 1e-4
-#  phast <- 0
-#
-#  tbl.tfbs <- getTFBS.moods(tv, tbl.roi, match.threshold=moods, conservation.threshold=phast7, motifs.tbx15.hocomoco)
-#  dim(tbl.tfbs)
-#  tbl.tfbs$name <- paste0("motifDb::", tbl.tfbs$motif_id)
-#
-#  tbl.sub <- tbl.tfbs[, c("chrom", "start", "end", "name")]
-#  dim(tbl.sub)
-#  track <- DataFrameAnnotationTrack("mood-hocomoco", tbl.sub, color="random", displayMode="collapse")
-#  displayTrack(igv, track)
-#
+      #---------------------------------------
+      # now the jaspar2018 motif
+      #---------------------------------------
+
+  fimo <- 1e-3
+  phast7 <- 0.7
+
+  tbl.tfbs <- getTFBS.fimo(tv, tbl.roi, fimo.threshold=fimo, conservation.threshold=phast7, meme.file.jaspar2018)
+  tbl.tfbs$name <- paste0("motifDb::", tbl.tfbs$motif_id)
+  dim(tbl.tfbs)
+
+  tbl.sub <- tbl.tfbs[, c("chrom", "start", "end", "name")]
+  tbl.ov <- as.data.frame(findOverlaps(GRanges(tbl.atacAll), GRanges(tbl.sub)))
+  tbl.sub.sub <- tbl.sub[tbl.ov$subjectHits,]
+
+  track <- DataFrameAnnotationTrack("fimo-jaspar", tbl.sub.sub, trackHeight=25)
+  displayTrack(igv, track)
 
 } # new.run
+#------------------------------------------------------------------------------------------------------------------------
+#   1: chr3:128,483,003-128,483,009    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3       +   6.642737          0.8767398 AGGGGTGA
+#   2: chr3:128,483,452-128,483,457    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3       +   6.658030          0.8787582 CGGTGTGA
+#   3: chr3:128,486,956-128,486,962    Hsapiens-jaspar2018-TBX15-MA0803.1  chr3       +   6.658030          0.8787582 CGGTGTGA
+#   4: chr3:128,497,528-128,497,534   
+brand.lab.chip <- function()
+{
+   tbl.regions <- data.frame(chrom=rep("chr3", 4),
+                             start=c(128483003, 128483452, 128486956, 128497528),
+                             end=c(128483009, 128483457, 128486962, 128497534),
+                             stringsAsFactors=FALSE)
+   track <- DataFrameAnnotationTrack("brand.ChIP", tbl.regions, color="blue", trackHeight=25)
+   displayTrack(igv, track)
+
+} # brand.lab.chip
 #------------------------------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 library(TrenaProjectHG38.generic)
 library(org.Hs.eg.db)
 library(GO.db)
-library(igvR)
+if(interactive()) require(igvR)
 library(GenomicScores)
 library(phastCons7way.UCSC.hg38); phast.7 <- phastCons7way.UCSC.hg38
 library(TrenaValidator)
@@ -23,7 +23,7 @@ if(!exists("tp")){
    setTargetGene(tp, "GATA2")
    }
 
-if(!exists("igv")){
+if(interactive() && !exists("igv")){
    igv <- igvR()
    setGenome(igv, "hg38")
    setBrowserWindowTitle(igv, "GATA2")
@@ -35,17 +35,17 @@ if(!exists("igv")){
    #         }, 4)
    } # igv
 #------------------------------------------------------------------------------------------------------------------------
-if(!exists("tv")) {
-   benchmark.full <- "~/github/trena/misc/saez-benchmark-paper/GarciaAlonso_Supplemental_Tables/database.csv"
-   tbl.bm <-read.table(benchmark.full, sep=",", as.is=TRUE, header=TRUE, nrow=-1)
-   message(sprintf("--- creating instance of TrenaValidator"))
-   tbl.benchmark <- get(load(system.file(package="TrenaValidator", "extdata", "tbl.A.RData")))
-   tbl.benchmark$pubmed.count <- unlist(lapply(strsplit(tbl.benchmark$pubmedID_from_curated_resources, ","), length))
-   #mtx <- get(load(system.file(package="TrenaValidator", "extdata", "mtx.gtex.lung.RData")))
-   #setMatrix(tv, mtx)
-   tv <- TrenaValidator(TF="TWIST1", "GATA2", tbl.benchmark);
-   tp.hg38 <- TrenaProjectHG38.generic()
-   }
+# if(!exists("tv")) {
+#   benchmark.full <- "~/github/trena/misc/saez-benchmark-paper/GarciaAlonso_Supplemental_Tables/database.csv"
+#   tbl.bm <-read.table(benchmark.full, sep=",", as.is=TRUE, header=TRUE, nrow=-1)
+#   message(sprintf("--- creating instance of TrenaValidator"))
+#   tbl.benchmark <- get(load(system.file(package="TrenaValidator", "extdata", "tbl.A.RData")))
+#   tbl.benchmark$pubmed.count <- unlist(lapply(strsplit(tbl.benchmark$pubmedID_from_curated_resources, ","), length))
+#   #mtx <- get(load(system.file(package="TrenaValidator", "extdata", "mtx.gtex.lung.RData")))
+#   #setMatrix(tv, mtx)
+#   tv <- TrenaValidator(TF="TWIST1", "GATA2", tbl.benchmark);
+#   tp.hg38 <- TrenaProjectHG38.generic()
+#   }
 #------------------------------------------------------------------------------------------------------------------------
 conservationTrack <- function()
 {
